@@ -16,8 +16,8 @@ import javax.persistence.EntityManager;
 public class BaseRepository {
     @Inject
     @Named("logger")
-    Logger log;
+    public Logger log;
 
     @Inject
-    EntityManager em;
+    public EntityManager em;
 }

@@ -50,7 +50,7 @@ public class HotelRepository extends BaseRepository {
     }
 
     public List<Hotel>  findAllByName(String name) {
-        TypedQuery<Hotel> query = em.createNamedQuery(Hotel.FIND_BY_PHONE_NUMBER, Hotel.class).setParameter("name", name);
+        TypedQuery<Hotel> query = em.createNamedQuery(Hotel.FIND_ALL_BY_NAME, Hotel.class).setParameter("name", name);
         return query.getResultList();
     }
 
@@ -67,7 +67,7 @@ public class HotelRepository extends BaseRepository {
      * @throws ConstraintViolationException, ValidationException, Exception
      */
     public Hotel create(Hotel hotel) throws Exception {
-        log.info("HotelRepository.create() - Creating " + hotel.getName() + " " + hotel.getPhoneNumber()+ " " +hotel.getPostCode());
+        log.info("HotelRepository.create() - Creating "+hotel.toString());
 
         // Write the contact to the database.
         em.persist(hotel);

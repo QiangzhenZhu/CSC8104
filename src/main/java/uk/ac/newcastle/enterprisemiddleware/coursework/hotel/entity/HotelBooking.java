@@ -5,7 +5,11 @@ import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @Classname HotelBooking
@@ -21,9 +25,9 @@ import java.util.Date;
 @Entity
 @NamedQueries({
         @NamedQuery(name = HotelBooking.FIND_ALL, query = "SELECT h FROM HotelBooking h ORDER BY h.bookingDate ASC"),
-        @NamedQuery(name = HotelBooking.FIND_BY_CUSTOMER_ID, query = "SELECT h FROM HotelBooking h WHERE h.customer.customerId = :customer_id"),
-        @NamedQuery(name = HotelBooking.FIND_BY_BOOKING_DATA_AND_HOTEL_ID, query = "SELECT h FROM HotelBooking h WHERE h.bookingDate = :booking_date AND h.hotel.hotelId = :hotel_id "),
-        @NamedQuery(name = HotelBooking.FIND_BY_CUSTOMER_EMAIL, query = "SELECT h FROM HotelBooking h WHERE h.customer.customerId IN (SELECT c.customerId FROM Customer c WHERE c.email = :email) ")
+        @NamedQuery(name = HotelBooking.FIND_BY_CUSTOMER_ID, query = "SELECT h FROM HotelBooking h WHERE h.customerId = :customer_id"),
+        @NamedQuery(name = HotelBooking.FIND_BY_BOOKING_DATA_AND_HOTEL_ID, query = "SELECT h FROM HotelBooking h WHERE h.bookingDate = :booking_date AND h.hotelId = :hotel_id "),
+        @NamedQuery(name = HotelBooking.FIND_BY_CUSTOMER_EMAIL, query = "SELECT h FROM HotelBooking h WHERE h.customerId IN (SELECT c.customerId FROM Customer c WHERE c.email = :email) ")
 })
 @XmlRootElement
 @Table(name = "hotel_booking", uniqueConstraints = @UniqueConstraint(columnNames = {"hotel_id","booking_date"}))
@@ -49,16 +53,6 @@ public class HotelBooking implements Serializable {
     private Long hotelId;
 
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="hotel_id")
-    private Hotel hotel = new Hotel();
-
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="customer_id")
-    private Customer customer = new Customer();
-
-
-
     @NotNull
     @Future(message = "Booking date can not be in the past. Please choose one in the future")
     @Column(name = "booking_date")
@@ -73,31 +67,10 @@ public class HotelBooking implements Serializable {
         this.bookingId = bookingId;
     }
 
-    public Hotel getHotel() {
-        return hotel;
-    }
 
-    public void setHotel(Hotel hotel) {
-        this.hotel = hotel;
-    }
-
-    public Long getHotelId(){
-        return this.hotel.getHotelId();
-    }
-
-    public Long getCustomerId(){
-        return this.customer.getCustomerId();
-    }
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-    }
 
     public Date getBookingDate() {
+
         return bookingDate;
     }
 
@@ -105,13 +78,52 @@ public class HotelBooking implements Serializable {
         this.bookingDate = bookingDate;
     }
 
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public Long getHotelId() {
+        return hotelId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
+    }
+
+    public void setHotelId(Long hotelId) {
+        this.hotelId = hotelId;
+    }
+
     @Override
     public String toString() {
         return "HotelBooking{" +
                 "bookingId=" + bookingId +
-                ", hotel=" + hotel +
-                ", customer=" + customer +
+                ", customerId=" + customerId +
+                ", hotelId=" + hotelId +
                 ", bookingDate=" + bookingDate +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof HotelBooking)) return false;
+        HotelBooking that = (HotelBooking) o;
+        return Objects.equals(customerId, that.customerId) && Objects.equals(hotelId, that.hotelId) && isSameDay(getBookingDate(), that.getBookingDate());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(customerId, hotelId, getBookingDate());
+    }
+
+
+    public static boolean isSameDay(Date date1, Date date2) {
+        LocalDate localDate1 = date1.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+        LocalDate localDate2 = date2.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();    return localDate1.isEqual(localDate2);
     }
 }

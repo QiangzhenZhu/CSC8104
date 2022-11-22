@@ -2,6 +2,7 @@ package uk.ac.newcastle.enterprisemiddleware.coursework.hotel.validator;
 
 import uk.ac.newcastle.enterprisemiddleware.contact.UniqueEmailException;
 import uk.ac.newcastle.enterprisemiddleware.coursework.hotel.entity.HotelBooking;
+import uk.ac.newcastle.enterprisemiddleware.coursework.hotel.exception.UniqueHotelBookingDateException;
 import uk.ac.newcastle.enterprisemiddleware.coursework.hotel.repository.HotelBookingRepository;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -10,6 +11,8 @@ import javax.persistence.NoResultException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
@@ -36,7 +39,7 @@ public class HotelBookingValidator extends BaseValidator {
 
         // Check the uniqueness of the email address
         if (hotelBookingAlreadyExists(hotelBooking.getBookingDate(), hotelBooking.getHotelId(),hotelBooking.getBookingId())) {
-            throw new UniqueEmailException("Unique Email Violation");
+            throw new UniqueHotelBookingDateException("Unique Hotel&Date Violation");
         }
     }
 
@@ -60,7 +63,7 @@ public class HotelBookingValidator extends BaseValidator {
         if (hotelBooking != null && hotelBookingId != null) {
             try {
                 hotelBookingWithID = crud.findById(hotelBookingId);
-                if (hotelBookingWithID != null && hotelBookingWithID.getBookingDate().equals(date) && Objects.equals(hotelBookingWithID.getHotelId(), hotelId)) {
+                if (hotelBookingWithID != null && isSameDay(hotelBookingWithID.getBookingDate(),date) && Objects.equals(hotelBookingWithID.getHotelId(), hotelId)) {
                     hotelBooking = null;
                 }
             } catch (NoResultException e) {
@@ -68,5 +71,14 @@ public class HotelBookingValidator extends BaseValidator {
             }
         }
         return hotelBooking != null;
+    }
+
+    public static boolean isSameDay(Date date1, Date date2) {
+        LocalDate localDate1 = date1.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+        LocalDate localDate2 = date2.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();    return localDate1.isEqual(localDate2);
     }
 }

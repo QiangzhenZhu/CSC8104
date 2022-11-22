@@ -2,6 +2,7 @@ package uk.ac.newcastle.enterprisemiddleware.coursework.hotel.validator;
 
 import uk.ac.newcastle.enterprisemiddleware.contact.UniqueEmailException;
 import uk.ac.newcastle.enterprisemiddleware.coursework.hotel.entity.Hotel;
+import uk.ac.newcastle.enterprisemiddleware.coursework.hotel.exception.UniqueHotelPhoneNumberException;
 import uk.ac.newcastle.enterprisemiddleware.coursework.hotel.repository.HotelRepository;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -11,6 +12,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -34,7 +36,7 @@ public class HotelValidator extends BaseValidator {
 
         // Check the uniqueness of the email address
         if (phoneNumberAlreadyExists(hotel.getPhoneNumber(), hotel.getHotelId())) {
-            throw new UniqueEmailException("Unique PhoneNumber Violation");
+            throw new UniqueHotelPhoneNumberException("Unique PhoneNumber Violation");
         }
     }
 

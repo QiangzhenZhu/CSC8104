@@ -1,9 +1,12 @@
 package uk.ac.newcastle.enterprisemiddleware.coursework.hotel.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -65,6 +68,13 @@ public class Customer implements Serializable {
     @Pattern(regexp = "^0\\d{10}",message = "a non-empty string which starts with a 0, contains only digits and is 11 characters in length")
     @Column(name = "phone_number")
     private String phoneNumber;
+
+
+    @JsonIgnore
+    @OneToMany(cascade = CascadeType.ALL, targetEntity = HotelBooking.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private List<HotelBooking> hotelBookingList;
+
 
     public Long getCustomerId() {
         return customerId;

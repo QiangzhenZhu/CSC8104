@@ -1,5 +1,7 @@
 package uk.ac.newcastle.enterprisemiddleware.coursework.hotel.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -7,6 +9,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -41,7 +44,7 @@ public class Hotel implements Serializable {
     private static final long serialVersionUID = -6609601901970535629L;
 
     public static final String FIND_ALL = "Hotel.findAll";
-    public static final String FIND_BY_PHONE_NUMBER = "Hotel.findByEmail";
+    public static final String FIND_BY_PHONE_NUMBER = "Hotel.findByPhoneNumber";
     public static final String FIND_ALL_BY_NAME = "Hotel.findAllByName";
 
     @Id
@@ -51,7 +54,7 @@ public class Hotel implements Serializable {
 
     @NotNull
     @Size(min = 1, max = 50)
-    @Pattern(regexp = "[A-Za-z0-9']{6}+", message = "a non-empty alpha-numerical string which is 6 characters in length.")
+    @Pattern(regexp = "[A-Za-z']+", message = "a non-empty alpha-numerical string which is 6 characters in length.")
     @Column(name = "name")
     private String name;
     
@@ -64,9 +67,15 @@ public class Hotel implements Serializable {
     @NotNull
     @NotEmpty
     @Size(min = 6, max = 6)
-    @Pattern(regexp = "[A-Za-z']+", message = "Please use a name without numbers or specials")
+    @Pattern(regexp = "[A-Za-z0-9']{6}", message = "Please use a name without numbers or specials")
     @Column(name = "post_code")
     private String postCode;
+
+
+    @JsonIgnore
+    @OneToMany(cascade = CascadeType.ALL, targetEntity = HotelBooking.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "hotel_id")
+    private List<HotelBooking> hotelBookingList;
 
     public Long getHotelId() {
         return hotelId;

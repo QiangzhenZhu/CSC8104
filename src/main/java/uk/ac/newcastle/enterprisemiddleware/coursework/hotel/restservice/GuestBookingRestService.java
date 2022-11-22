@@ -6,6 +6,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.wildfly.common.iteration.EnumerationIterator;
+import org.yaml.snakeyaml.util.EnumUtils;
 import uk.ac.newcastle.enterprisemiddleware.area.InvalidAreaCodeException;
 import uk.ac.newcastle.enterprisemiddleware.contact.UniqueEmailException;
 import uk.ac.newcastle.enterprisemiddleware.coursework.hotel.entity.Customer;
@@ -32,6 +33,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -90,11 +92,24 @@ public class GuestBookingRestService {
             transaction.begin();
             Customer customer = guestBooking.getCustomer();
             Customer storeCustomer = null;
+            Hotel storedHotel = null;
+
+            try{
+                storedHotel = hotelService.findByPhoneNumber(guestBooking.getHotel().getPhoneNumber());
+
+            }catch (Exception e){
+
+            }
+            if (storedHotel == null) {
+                throw new RestServiceException("Bad Request,can not find the hotel by the phone number", Response.Status.BAD_REQUEST);
+            }
             try{
                 storeCustomer = customerService.findByEmail(guestBooking.getCustomer().getEmail());
             }catch(Exception e){
 
             }
+
+
             if(storeCustomer == null){
                 //no customer find with the email ,so create a new customer
                 customer.setCustomerId(null);
@@ -102,11 +117,12 @@ public class GuestBookingRestService {
             }
 
             customerId = storeCustomer.getCustomerId();
-            hotelId = guestBooking.getHotel().getHotelId();
+            hotelId = storedHotel.getHotelId();
             HotelBooking hotelBooking = new HotelBooking();
-            hotelBooking.getCustomer().setCustomerId(customerId);
-            hotelBooking.getHotel().setHotelId(hotelId);
+            hotelBooking.setCustomerId(customerId);
+            hotelBooking.setHotelId(hotelId);
             hotelBooking.setBookingId(null);
+            hotelBooking.setBookingDate(guestBooking.getDate());
             hotelBookingService.create(hotelBooking);
             builder = Response.status(Response.Status.CREATED).entity(guestBooking);
 
@@ -129,7 +145,7 @@ public class GuestBookingRestService {
         } catch (UniqueHotelBookingDateException e) {
             transaction.rollback();
             Map<String, String> responseObj = new HashMap<>();
-            responseObj.put("date&hotel", "The hotel has been booked.");
+            responseObj.put("hotel", "The hotel has been booked.");
             throw new RestServiceException("Bad Request", responseObj, Response.Status.BAD_REQUEST, e);
         } catch (Exception e) {
             transaction.rollback();

@@ -151,7 +151,7 @@ public class HotelBookingRestService {
         } catch (UniqueHotelBookingDateException e) {
             // Handle the unique constraint violation
             Map<String, String> responseObj = new HashMap<>();
-            responseObj.put("hotel&date", "That hotelBookingDate is already used, please use a unique hotel&date");
+            responseObj.put("hotel", "That hotel has been booked in this day");
             throw new RestServiceException("Bad Request", responseObj, Response.Status.CONFLICT, e);
         }  catch (Exception e) {
             // Handle generic exceptions
@@ -220,7 +220,7 @@ public class HotelBookingRestService {
         } catch (UniqueHotelBookingDateException e) {
             // Handle the unique constraint violation
             Map<String, String> responseObj = new HashMap<>();
-            responseObj.put("hotel&date", "That hotelBookingDate is already used, please use a unique hotel&date");
+            responseObj.put("hotel", "That hotel has been booked in this day");
             throw new RestServiceException("Bad Request", responseObj, Response.Status.CONFLICT, e);
         }  catch (Exception e) {
             // Handle generic exceptions

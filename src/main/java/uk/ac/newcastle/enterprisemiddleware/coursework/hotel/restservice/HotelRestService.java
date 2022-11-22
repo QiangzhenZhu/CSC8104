@@ -18,6 +18,7 @@ import javax.transaction.Transactional;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.List;
@@ -30,9 +31,9 @@ import java.util.logging.Logger;
  * @Date 2022/11/20 18:37
  * @Created by 10835
  */
-//@Path("/hotels")
-//@Consumes(MediaType.APPLICATION_JSON)
-//@Produces(MediaType.APPLICATION_JSON)
+@Path("/hotels")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class HotelRestService {
     @Inject
     @Named("logger")
@@ -68,7 +69,7 @@ public class HotelRestService {
      */
     @GET
     @Cache
-    @Path("/phoneNumber/{phoneNumber:^0\\d{10}}")
+    @Path("/phoneNumber/{phoneNumber:[0-9]+}")
     @Operation(
             summary = "Fetch a Hotel by phone",
             description = "Returns a JSON representation of the Hotel object with the provided phoneNumber."
@@ -81,7 +82,6 @@ public class HotelRestService {
             @Parameter(description = "PhoneNumber of Hotel to be fetched", required = true)
             @PathParam("phoneNumber")
             String phoneNumber) {
-
         Hotel hotel;
         try {
             hotel = hotelService.findByPhoneNumber(phoneNumber);
