@@ -27,6 +27,6 @@ public interface FlightBookingService {
     FlightBooking createFlightBooking(FlightBooking flightbooking);
 
     @DELETE
-    @Path("/{id:[0-9]+}")
+    @Path("/deleteFlightBooking/{id:[0-9]+}")
     FlightBooking deleteFlightBooking(@PathParam("id") Long id);
 }
