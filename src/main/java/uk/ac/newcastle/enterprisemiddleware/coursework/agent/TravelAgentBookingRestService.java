@@ -17,7 +17,6 @@ import uk.ac.newcastle.enterprisemiddleware.util.RestServiceException;
 import javax.inject.Inject;
 import javax.transaction.SystemException;
 import javax.transaction.Transactional;
-import javax.transaction.UserTransaction;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -51,10 +50,6 @@ public class TravelAgentBookingRestService {
 
     @Inject
     TravelAgentBookingRepository travelAgentBookingRepository;
-
-    @Inject
-    UserTransaction transaction;
-
 
     @GET
     @Path("/findAllTravelAgentBookings")
@@ -95,16 +90,13 @@ public class TravelAgentBookingRestService {
         }
         Response response;
         try {
-            transaction.begin();
             flightBookingService.deleteFlightBooking(travelAgentBooking.getHotelBookingId());
             taxiBookingService.deleteTaxiBooking(travelAgentBooking.getTaxiBookingId());
             HotelBooking hotelBooking = hotelBookingService.findById(travelAgentBooking.getHotelBookingId());
             hotelBookingService.delete(hotelBooking);
             travelAgentBookingRepository.delete(travelAgentBooking);
             response = Response.ok(travelAgentBooking).build();
-            transaction.commit();
         } catch (Exception e) {
-            transaction.rollback();
             log.severe(e.getMessage());
             throw new RestServiceException(e);
         }
@@ -115,9 +107,10 @@ public class TravelAgentBookingRestService {
     @Path("/createTravelAgentBooking")
     @Operation(description = "Create a new TravelAgentBooking")
     @Transactional
-    public Response createTravelAgentBooking(@Valid TravelAgent travelAgent) throws SystemException {
+    public Response createTravelAgentBooking(@Valid TravelAgent travelAgent) throws Exception {
         TaxiBooking taxiBooking = null;
         FlightBooking flightBooking = null;
+        HotelBooking hotelBooking = null;
 
         if (travelAgent == null) {
             throw new RestServiceException("Bad Request", Response.Status.BAD_REQUEST);
@@ -125,36 +118,44 @@ public class TravelAgentBookingRestService {
         log.info(travelAgent.toString());
         Response res = null;
         try {
-            transaction.begin();
-            HotelBooking hotelBooking = travelAgent.getHotelBooking();
+            hotelBooking = travelAgent.getHotelBooking();
             hotelBookingService.create(hotelBooking);
 
-            flightBooking = flightBookingService.createFlightBooking(travelAgent.getFlightBooking());
-            if (flightBooking == null) {
-                throw new RestServiceException("Sorry,flight booking error");
-            }
 
             taxiBooking = taxiBookingService.createTaxiBooking(travelAgent.getTaxiBooking());
             if (taxiBooking == null) {
                 throw new RestServiceException("Sorry, Taxi booking error");
             }
 
+            flightBooking = flightBookingService.createFlightBooking(travelAgent.getFlightBooking());
+            if (flightBooking == null) {
+                throw new RestServiceException("Sorry,flight booking error");
+            }
+
+
             TravelAgentBooking travelAgentBooking = new TravelAgentBooking();
             travelAgentBooking.setCustomerId(travelAgent.getCustomer().getCustomerId());
             travelAgentBooking.setTaxiBookingId(taxiBooking.getId());
             travelAgentBooking.setFlightBookingId(flightBooking.getId());
-            travelAgentBooking.setHotelBookingId(hotelBooking.getHotelId());
+            travelAgentBooking.setHotelBookingId(hotelBooking.getBookingId());
             travelAgentBookingRepository.create(travelAgentBooking);
             // all successful , commit transaction
-            transaction.commit();
             res = Response.status(Response.Status.CREATED).entity(travelAgentBooking).build();
 
         } catch (Exception e) {
             e.printStackTrace();
             log.severe(e.getMessage());
             log.severe("database rollback");
-            //roll back
-            transaction.rollback();
+            //roll back ,飞机预定失败或出租车预定失败
+            if (hotelBooking!=null &&(flightBooking == null || taxiBooking == null)) {
+                hotelBookingService.delete(hotelBooking);
+                if (flightBooking != null) {
+                    flightBookingService.deleteFlightBooking(flightBooking.getId());
+                }
+                if (taxiBooking != null) {
+                    taxiBookingService.deleteTaxiBooking(taxiBooking.getId());
+                }
+            }
             throw new RestServiceException(e.getMessage());
         }
         return res;

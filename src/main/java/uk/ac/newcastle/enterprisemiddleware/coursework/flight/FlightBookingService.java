@@ -6,7 +6,7 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import javax.ws.rs.*;
 import java.util.List;
 
-@Path("/flightBooking")
+@Path("/api/flightBooking")
 @RegisterRestClient(configKey = "flight-booking-api")
 public interface FlightBookingService {
 
@@ -23,6 +23,7 @@ public interface FlightBookingService {
     List<FlightBooking> getFlightBookingsByCustomer(@PathParam("customerId") Long id);
 
     @POST
+    @Path("/createFlightBooking")
     FlightBooking createFlightBooking(FlightBooking flightbooking);
 
     @DELETE

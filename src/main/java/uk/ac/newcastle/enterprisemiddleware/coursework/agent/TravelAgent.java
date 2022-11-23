@@ -2,7 +2,6 @@ package uk.ac.newcastle.enterprisemiddleware.coursework.agent;
 
 import uk.ac.newcastle.enterprisemiddleware.coursework.flight.FlightBooking;
 import uk.ac.newcastle.enterprisemiddleware.coursework.hotel.entity.Customer;
-import uk.ac.newcastle.enterprisemiddleware.coursework.hotel.entity.GuestBooking;
 import uk.ac.newcastle.enterprisemiddleware.coursework.hotel.entity.HotelBooking;
 import uk.ac.newcastle.enterprisemiddleware.coursework.taxi.TaxiBooking;
 
